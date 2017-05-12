@@ -69,7 +69,7 @@ class HostCollector(collector.FactsCollector):
         locale_info = {}
         effective_locale = 'Unknown'
         if locale.getdefaultlocale()[0] is not None:
-            effective_locale = ".".join(filter(None, locale.getdefaultlocale()))
+            effective_locale = ".".join([_f for _f in locale.getdefaultlocale() if _f])
         locale_info['system.default_locale'] = effective_locale
         host_facts.update(locale_info)
 
