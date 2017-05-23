@@ -23,6 +23,7 @@ import dateutil.parser
 import locale
 import logging
 import os
+import six
 import socket
 import sys
 import time
@@ -960,7 +961,7 @@ class UEPConnection(object):
         return ret
 
     def addOrUpdateGuestId(self, uuid, guestId):
-        if isinstance(guestId, str) or isinstance(guestId, type(u"")):
+        if isinstance(guestId, six.string_types):
             guest_uuid = guestId
             guestId = {}
         else:
@@ -984,7 +985,7 @@ class UEPConnection(object):
         return [self.sanitizeGuestId(guestId) for guestId in guestIds or []]
 
     def sanitizeGuestId(self, guestId):
-        if isinstance(guestId, str) or isinstance(guestId, type(u"")):
+        if isinstance(guestId, six.string_types):
             return guestId
         elif isinstance(guestId, dict) and "guestId" in list(guestId.keys()):
             if self.supports_resource('guestids'):
