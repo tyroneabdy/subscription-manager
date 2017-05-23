@@ -17,9 +17,11 @@ from __future__ import print_function, division, absolute_import
 
 import sys
 
-import gettext
 from subscription_manager.cli import AbstractCLICommand
-_ = gettext.gettext
+
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 class RCTCliCommand(AbstractCLICommand):

@@ -14,7 +14,6 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-import gettext
 import signal
 
 from rhsm.certificate2 import EntitlementCertificate, ProductCertificate, IdentityCertificate
@@ -22,7 +21,9 @@ from rhsm.certificate2 import EntitlementCertificate, ProductCertificate, Identi
 # BZ 973938 python doesn't correctly handle SIGPIPE
 signal.signal(signal.SIGPIPE, signal.SIG_DFL)
 
-_ = gettext.gettext
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 # TODO: to be extra paranoid, we could ask to print

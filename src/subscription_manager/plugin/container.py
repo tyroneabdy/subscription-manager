@@ -14,9 +14,7 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-
 """ Core code for the container content plugin. """
-import gettext
 import logging
 import os
 import re
@@ -25,9 +23,11 @@ import shutil
 from subscription_manager import certlib
 from subscription_manager.model import find_content
 
-log = logging.getLogger(__name__)
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
-_ = gettext.gettext
+log = logging.getLogger(__name__)
 
 CONTAINER_CONTENT_TYPE = "containerimage"
 

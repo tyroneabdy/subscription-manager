@@ -11,17 +11,12 @@ from . import fixture
 from subscription_manager import managercli
 from subscription_manager.printing_utils import to_unicode_or_bust
 
-# Localization domain:
-APP = "rhsm"
-DIR = "/usr/share/locale"
-gettext.bindtextdomain(APP, DIR)
-gettext.textdomain(APP)
-
-_ = gettext.gettext
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 class TestLocale(unittest.TestCase):
-
     # see http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes
     # http://docs.redhat.com/docs/en-US/Red_Hat_Enterprise_Linux/5/html/International_Language_Support_Guide/Red_Hat_Enterprise_Linux_International_Language_Support_Guide-Installing_and_supporting_languages.html
     test_locales = [

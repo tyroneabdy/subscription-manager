@@ -13,7 +13,6 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-import gettext
 import socket
 import json
 import logging
@@ -31,7 +30,10 @@ from subscription_manager.injectioninit import init_dep_injection
 
 init_dep_injection()
 
-_ = gettext.gettext
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
+
 log = logging.getLogger(__name__)
 
 from rhsmlib.services import config

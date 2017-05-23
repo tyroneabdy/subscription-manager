@@ -1,7 +1,8 @@
 from __future__ import print_function, division, absolute_import
 
 import gettext
-_ = gettext.gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 class Branding(object):

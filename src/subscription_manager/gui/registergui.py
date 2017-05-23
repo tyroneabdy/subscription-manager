@@ -16,8 +16,6 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-
-import gettext
 import logging
 import re
 import socket
@@ -53,9 +51,10 @@ from subscription_manager.gui.autobind import DryRunResult, \
         NoProductsException
 from subscription_manager.jsonwrapper import PoolWrapper
 
-_ = lambda x: gettext.ldgettext("rhsm", x)
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
-gettext.textdomain("rhsm")
 log = logging.getLogger(__name__)
 
 from rhsmlib.services import config

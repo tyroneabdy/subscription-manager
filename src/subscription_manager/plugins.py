@@ -15,7 +15,6 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-import gettext
 import glob
 import imp
 import inspect
@@ -50,9 +49,11 @@ DEFAULT_CONF_PATH = "/etc/rhsm/pluginconf.d/"
 
 cfg = initConfig()
 
-log = logging.getLogger(__name__)
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
-_ = gettext.gettext
+log = logging.getLogger(__name__)
 
 
 class PluginException(Exception):

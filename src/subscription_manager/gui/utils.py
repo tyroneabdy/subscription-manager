@@ -29,6 +29,10 @@ from subscription_manager.exceptions import ExceptionMapper
 import rhsm.connection as connection
 from subscription_manager.gui import messageWindow
 
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
+
 log = logging.getLogger(__name__)
 
 # we need gtk 2.18+ to do the right markup in linkify
@@ -40,8 +44,6 @@ EVEN_ROW_COLOR = '#eeeeee'
 
 # set if we are in firstboot, to disable linkify, see bz#814378
 FIRSTBOOT = False
-
-_ = lambda x: gettext.ldgettext("rhsm", x)
 
 
 def running_as_firstboot():

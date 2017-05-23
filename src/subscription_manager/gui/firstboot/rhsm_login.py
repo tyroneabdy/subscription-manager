@@ -5,8 +5,6 @@ import sys
 import logging
 import dbus.mainloop.glib
 
-_ = lambda x: gettext.ldgettext("rhsm", x)
-
 from subscription_manager import ga_loader
 ga_loader.init_ga()
 
@@ -36,12 +34,14 @@ from rhsmlib.facts.hwprobe import HardwareCollector
 from subscription_manager.gui import managergui
 from subscription_manager.gui import registergui
 from subscription_manager.gui.utils import format_exception
-from subscription_manager.i18n import configure_i18n
 
 from firstboot import module
 from firstboot import constants
 
-configure_i18n(with_glade=True)
+import gettext
+from subscription_manager import i18n
+i18n.configure_i18n()
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 from rhsm.utils import remove_scheme
 

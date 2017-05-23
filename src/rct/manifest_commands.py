@@ -15,7 +15,6 @@ from __future__ import print_function, division, absolute_import
 # in this software or its documentation.
 #
 import errno
-import gettext
 import os
 import sys
 
@@ -29,7 +28,9 @@ from rct.printing import xstr
 from subscription_manager.cli import InvalidCLIOptionError
 from rhsm import ourjson as json
 
-_ = gettext.gettext
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 def get_value(json_dict, path):

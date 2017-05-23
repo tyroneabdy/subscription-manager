@@ -18,7 +18,6 @@ from __future__ import print_function, division, absolute_import
 #
 
 import threading
-import gettext
 import sys
 
 from six.moves import queue
@@ -29,7 +28,9 @@ from subscription_manager.managerlib import fetch_certificates
 from subscription_manager.injection import IDENTITY, \
         PLUGIN_MANAGER, CP_PROVIDER, require
 
-_ = gettext.gettext
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 class AsyncPool(object):

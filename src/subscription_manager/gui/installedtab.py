@@ -24,15 +24,16 @@ from rhsmlib.facts.hwprobe import ClassicCheck
 from subscription_manager.utils import friendly_join
 
 import logging
-import gettext
 from subscription_manager.ga import GObject as ga_GObject
 from subscription_manager.ga import Gtk as ga_Gtk
 from subscription_manager.ga import GdkPixbuf as ga_GdkPixbuf
 import os
 
-log = logging.getLogger(__name__)
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
-_ = gettext.gettext
+log = logging.getLogger(__name__)
 
 prefix = os.path.dirname(__file__)
 VALID_IMG = os.path.join(prefix, "data/icons/valid.svg")

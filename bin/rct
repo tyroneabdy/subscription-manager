@@ -34,10 +34,11 @@ configure_i18n()
 from subscription_manager import logutil
 logutil.init_logger()
 
-import gettext
-_ = gettext.gettext
-
 from rct.cli import RctCLI
+
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 def main():

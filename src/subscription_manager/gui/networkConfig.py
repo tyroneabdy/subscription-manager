@@ -14,8 +14,6 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-
-import gettext
 import logging
 import os
 import threading
@@ -35,11 +33,13 @@ import subscription_manager.injection as inj
 from subscription_manager.gui import progress
 from subscription_manager.gui import widgets
 
-_ = gettext.gettext
-
-DIR = os.path.dirname(__file__)
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 log = logging.getLogger(__name__)
+
+DIR = os.path.dirname(__file__)
 
 
 class NetworkConfigDialog(widgets.SubmanBaseWidget):

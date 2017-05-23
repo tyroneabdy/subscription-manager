@@ -39,7 +39,8 @@ from rhsm_debug.cli import RhsmDebugCLI
 from subscription_manager.cli import system_exit
 
 import gettext
-_ = gettext.gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 try:

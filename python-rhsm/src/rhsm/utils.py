@@ -23,7 +23,9 @@ import six.moves.urllib.parse
 
 from rhsm.config import DEFAULT_PROXY_PORT
 
-_ = lambda x: gettext.ldgettext("rhsm", x)
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 def remove_scheme(uri):

@@ -16,12 +16,11 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-
-import gettext
 from iniparse import RawConfigParser as ConfigParser
 import logging
 import os
 import string
+import six
 import socket
 import subscription_manager.injection as inj
 from subscription_manager.cache import OverrideStatusCache, WrittenOverrideCache
@@ -33,11 +32,13 @@ from six.moves import configparser
 
 from rhsm.config import initConfig, in_container
 
-# FIXME: local imports
-
 from subscription_manager.certlib import ActionReport, BaseActionInvoker
 from subscription_manager.certdirectory import Path
 from rhsmlib.services import config
+
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 log = logging.getLogger(__name__)
 
@@ -46,8 +47,6 @@ conf = config.Config(initConfig())
 ALLOWED_CONTENT_TYPES = ["yum"]
 
 ZYPPER_REPO_DIR = '/etc/rhsm/zypper.repos.d'
-
-_ = gettext.gettext
 
 
 def manage_repos_enabled():
@@ -537,9 +536,10 @@ class RepoUpdateActionCommand(object):
         self.report.repo_deleted.append(section)
 
 
+@six.python_2_unicode_compatible
 class RepoActionReport(ActionReport):
     """Report class for reporting yum repo updates."""
-    name = "Repo Updates"
+    name = u"Repo Updates"
 
     def __init__(self):
         super(RepoActionReport, self).__init__()
@@ -554,21 +554,18 @@ class RepoActionReport(ActionReport):
     def format_repos_info(self, repos, formatter):
         indent = '    '
         if not repos:
-            return '%s<NONE>' % indent
+            return u'%s<NONE>' % indent
 
         r = []
         for repo in repos:
-            r.append("%s%s" % (indent, formatter(repo)))
-        return '\n'.join(r)
+            r.append(u"%s%s" % (indent, formatter(repo)))
+        return u'\n'.join(r)
 
     def repo_format(self, repo):
-        msg = "[id:%s %s]" % (repo.id,
-                               repo['name'])
-        return msg.encode('utf8')
+        msg = u"[id:%s %s]" % (repo.id, repo['name'])
 
     def section_format(self, section):
-        msg = "[%s]" % section
-        return msg.encode('utf8')
+        msg = u"[%s]" % section
 
     def format_repos(self, repos):
         return self.format_repos_info(repos, self.repo_format)
@@ -586,7 +583,7 @@ class RepoActionReport(ActionReport):
         s.append(_('Deleted'))
         # deleted are former repo sections, but they are the same type
         s.append(self.format_sections(self.repo_deleted))
-        return '\n'.join(s)
+        return u'\n'.join(s)
 
 
 class Repo(dict):

@@ -18,11 +18,9 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-
 from subscription_manager.injection import require, IDENTITY, CERT_SORTER, CP_PROVIDER
 import subscription_manager.injection as inj
 
-import gettext
 import locale
 import logging
 import webbrowser
@@ -64,13 +62,9 @@ from subscription_manager.gui.reposgui import RepositoriesDialog
 from subscription_manager.overrides import Overrides
 from subscription_manager.cli import system_exit
 
-
-_ = gettext.gettext
-
-gettext.textdomain("rhsm")
-
-#Gtk.glade.bindtextdomain("rhsm")
-#Gtk.Window.set_default_icon_name("subscription-manager")
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 log = logging.getLogger(__name__)
 

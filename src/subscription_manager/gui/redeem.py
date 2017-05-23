@@ -14,15 +14,15 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-
-import gettext
 import logging
 
 from subscription_manager.gui.utils import handle_gui_exception
 from subscription_manager.gui import widgets
 from subscription_manager.injection import IDENTITY, require
 
-_ = gettext.gettext
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 log = logging.getLogger(__name__)
 

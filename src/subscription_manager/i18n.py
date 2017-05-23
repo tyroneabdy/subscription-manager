@@ -20,7 +20,7 @@ APP = 'rhsm'
 DIR = '/usr/share/locale/'
 
 
-def configure_i18n(with_glade=False):
+def configure_i18n():
     """
     Configure internationalization for the application. Should only be
     called once per invocation. (once for CLI, once for GUI)
@@ -33,8 +33,3 @@ def configure_i18n(with_glade=False):
         locale.setlocale(locale.LC_ALL, 'C')
     gettext.bindtextdomain(APP, DIR)
     gettext.textdomain(APP)
-
-#    if (with_glade):
-#        import gtk.glade
-#        gtk.glade.bindtextdomain(APP, DIR)
-#        gtk.glade.textdomain(APP)

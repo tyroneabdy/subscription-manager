@@ -25,16 +25,17 @@ Just use this instead of optparse, the interface should be the same.
 For some backgorund, see:
 http://bugs.python.org/issue4319
 """
-import gettext
 import optparse
 from optparse import IndentedHelpFormatter as _IndentedHelpFormatter
 from optparse import OptionParser as _OptionParser
 import sys
 import textwrap
 
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
-_ = gettext.gettext
-optparse._ = gettext.gettext
+optparse._ = _
 
 # note default is lower caps
 USAGE = _("%prog [OPTIONS]")
@@ -107,21 +108,21 @@ class WrappedIndentedHelpFormatter(_IndentedHelpFormatter):
         opts = self.option_strings[option]
         opt_width = self.help_position - self.current_indent - 2
         if len(opts) > opt_width:
-            opts = "%*s%s\n" % (self.current_indent, "", opts)
+            opts = u"%*s%s\n" % (self.current_indent, u"", opts)
             indent_first = self.help_position
         else:                       # start help on same line as opts
-            opts = "%*s%-*s  " % (self.current_indent, "", opt_width, opts)
+            opts = u"%*s%-*s  " % (self.current_indent, u"", opt_width, opts)
             indent_first = 0
         result.append(opts)
         if option.help:
             help_text = self.expand_default(option)
             help_lines = textwrap.wrap(help_text, self.help_width,
                                        break_long_words=False)
-            result.append("%*s%s\n" % (indent_first, "", help_lines[0]))
-            result.extend(["%*s%s\n" % (self.help_position, "", line)
+            result.append(u"%*s%s\n" % (indent_first, u"", help_lines[0]))
+            result.extend([u"%*s%s\n" % (self.help_position, u"", line)
                            for line in help_lines[1:]])
-        elif opts[-1] != "\n":
-            result.append("\n")
+        elif opts[-1] != u"\n":
+            result.append(u"\n")
         return "".join(result)
 
     # 2.4 uses lower case "usage", 2.6 uses "Usage"

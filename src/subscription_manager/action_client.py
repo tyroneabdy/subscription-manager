@@ -18,7 +18,6 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-import gettext
 import logging
 
 from subscription_manager import base_action_client
@@ -31,10 +30,11 @@ from subscription_manager.packageprofilelib import PackageProfileActionInvoker
 from subscription_manager.installedproductslib import InstalledProductsActionInvoker
 from subscription_manager.content_action_client import ContentActionClient
 
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 log = logging.getLogger(__name__)
-
-_ = gettext.gettext
 
 
 class ActionClient(base_action_client.BaseActionClient):

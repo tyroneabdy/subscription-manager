@@ -15,7 +15,6 @@ from __future__ import print_function, division, absolute_import
 # in this software or its documentation.
 #
 import errno
-import gettext
 import optparse
 import os
 import sys
@@ -33,11 +32,13 @@ from rhsm import ourjson as json
 from rhsm.config import initConfig
 from rhsmlib.services import config
 
-_ = gettext.gettext
-
-conf = config.Config(initConfig())
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 log = logging.getLogger('rhsm-app.' + __name__)
+
+conf = config.Config(initConfig())
 
 ERR_NOT_REGISTERED_MSG = _("This system is not yet registered. Try 'subscription-manager register --help' for more information.")
 ERR_NOT_REGISTERED_CODE = 1

@@ -16,8 +16,6 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-
-import gettext
 from gzip import GzipFile
 import logging
 import os
@@ -38,7 +36,10 @@ from subscription_manager import repolib
 import subscription_manager.injection as inj
 from rhsm import ourjson as json
 
-_ = gettext.gettext
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
+
 log = logging.getLogger(__name__)
 
 

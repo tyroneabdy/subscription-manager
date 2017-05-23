@@ -16,7 +16,6 @@ from __future__ import print_function, division, absolute_import
 # in this software or its documentation.
 #
 import getpass
-import gettext
 import libxml2
 import logging
 import os
@@ -35,7 +34,9 @@ from rhn import rpclib
 from rhsm.connection import RemoteServerException, RestlibException
 from rhsm.utils import ServerUrlParseError
 
-_ = gettext.gettext
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 from subscription_manager import injection as inj
 from subscription_manager.cli import system_exit

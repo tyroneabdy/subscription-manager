@@ -48,11 +48,11 @@ from rhsm.connection import RestlibException, GoneException
 from rhsm.config import DEFAULT_PORT, DEFAULT_PREFIX, DEFAULT_HOSTNAME, \
     DEFAULT_CDN_HOSTNAME, DEFAULT_CDN_PORT, DEFAULT_CDN_PREFIX
 
+import gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
+
 log = logging.getLogger(__name__)
-
-_ = lambda x: gettext.ldgettext("rhsm", x)
-
-gettext.textdomain("rhsm")
 
 
 class DefaultDict(collections.defaultdict):

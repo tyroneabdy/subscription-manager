@@ -41,7 +41,8 @@ from subscription_manager.i18n_optparse import OptionParser, \
 from subscription_manager.utils import generate_correlation_id
 
 import gettext
-_ = gettext.gettext
+from subscription_manager import i18n
+_ = gettext.translation(i18n.APP, fallback=True).ugettext
 
 
 def exit_on_signal(_signumber, _stackframe):
