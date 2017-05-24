@@ -5,11 +5,9 @@ try:
 except ImportError:
     import unittest
 
-import gettext
 from . import fixture
 
 from subscription_manager import managercli
-from subscription_manager.printing_utils import to_unicode_or_bust
 
 import gettext
 from subscription_manager import i18n
@@ -57,11 +55,6 @@ class TestLocale(unittest.TestCase):
 
 
 class TestUnicodeGettext(TestLocale):
-    def test_ja_not_serial(self):
-        with fixture.locale_context('ja_JP.UTF-8'):
-            msg = _("'%s' is not a valid serial number") % "123123"
-            unicode(to_unicode_or_bust(msg)).encode("UTF-8") + '\n'
-
     def test_system_exit(self):
         with fixture.locale_context('ja_JP.UTF-8'):
             try:

@@ -195,10 +195,3 @@ def echo_columnize_callback(template_str, *args, **kwargs):
     """
     return template_str % tuple(args)
 
-
-# from http://farmdev.com/talks/unicode/
-def to_unicode_or_bust(obj, encoding='utf-8'):
-    if isinstance(obj, six.string_types):
-        if not isinstance(obj, unicode):
-            obj = unicode(obj, encoding)
-    return obj
