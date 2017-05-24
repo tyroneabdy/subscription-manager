@@ -404,6 +404,7 @@ class _CertFactory(object):
                     "certificate payload.")
 
 
+@six.python_2_unicode_compatible
 class Version(object):
     """ Small wrapper for version string comparisons. """
     def __init__(self, version_str):
@@ -698,6 +699,7 @@ class Product(object):
         return (self.id == other.id)
 
 
+@six.python_2_unicode_compatible
 class Order(object):
     """
     Represents the order information for the subscription an entitlement
@@ -748,6 +750,7 @@ class Order(object):
                 (self.name, self.number, self.sku)
 
 
+@six.python_2_unicode_compatible
 class Content(object):
 
     def __init__(self, content_type=None, name=None, label=None, vendor=None, url=None,

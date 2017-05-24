@@ -14,7 +14,6 @@ from __future__ import print_function, division, absolute_import
 # granted to use or replicate Red Hat trademarks that are incorporated
 # in this software or its documentation.
 #
-
 """
 Contains classes for working with x.509 certificates.
 
@@ -29,11 +28,13 @@ will be relocated into this module.
 import dateutil
 import os
 import re
+import six
 from datetime import datetime as dt
 from datetime import tzinfo, timedelta
 from rhsm import _certificate
 import logging
 import warnings
+import rhsm.i18n_utils as p
 
 log = logging.getLogger(__name__)
 
@@ -105,6 +106,7 @@ def deprecated(func):
     return new_func
 
 
+@six.python_2_unicode_compatible
 class Certificate(object):
     """
     Represents and x.509 certificate.
@@ -133,10 +135,10 @@ class Certificate(object):
         self.__ext = Extensions(x509)
         self.x509 = x509
 
-        self.subj = self.x509.get_subject()
-        self.serial = self.x509.get_serial_number()
+        self.subj = p.safe_decode(self.x509.get_subject())
+        self.serial = p.safe_decode(self.x509.get_serial_number())
 
-        self.altName = x509.get_extension(name='subjectAltName')
+        self.altName = p.safe_decode(x509.get_extension(name='subjectAltName'))
 
     def serialNumber(self):
         """
@@ -274,10 +276,10 @@ class Certificate(object):
         :return: A PEM string
         :rtype: str
         """
-        return self.x509.as_pem()
+        return p.safe_decode(self.x509.as_pem())
 
     def __str__(self):
-        return self.x509.as_text()
+        return p.safe_decode(self.x509.as_text())
 
     def __repr__(self):
         sn = self.serialNumber()
@@ -338,6 +340,7 @@ class RedhatCertificate(Certificate):
         return bogus
 
 
+@six.python_2_unicode_compatible
 class ProductCertificate(RedhatCertificate):
     """
     Represents a Red Hat product/entitlement certificate.
@@ -386,18 +389,19 @@ class ProductCertificate(RedhatCertificate):
 
     def __str__(self):
         s = []
-        s.append('RAW:')
-        s.append('===================================')
+        s.append(u'RAW:')
+        s.append(u'===================================')
         s.append(Certificate.__str__(self))
-        s.append('MODEL:')
-        s.append('===================================')
-        s.append('Serial#: %s' % self.serialNumber())
-        s.append('Subject (CN): %s' % self.subject().get('CN'))
+        s.append(u'MODEL:')
+        s.append(u'===================================')
+        s.append(u'Serial#: %s' % self.serialNumber())
+        s.append(u'Subject (CN): %s' % self.subject().get('CN'))
         for p in self.getProducts():
             s.append(str(p))
-        return '\n'.join(s)
+        return u'\n'.join(s)
 
 
+@six.python_2_unicode_compatible
 class EntitlementCertificate(ProductCertificate):
     """
     Represents an entitlement certificate.
@@ -506,9 +510,10 @@ class EntitlementCertificate(ProductCertificate):
         for ent in self.getEntitlements():
             s.append(str(ent))
         s.append(str(order))
-        return '\n'.join(s)
+        return u'\n'.join(s)
 
 
+@six.python_2_unicode_compatible
 class Key(object):
     """
     The (private|public) key.
@@ -579,6 +584,7 @@ class Key(object):
         return self.content
 
 
+@six.python_2_unicode_compatible
 class DateRange(object):
     """
     Date range object.
@@ -648,7 +654,7 @@ class DateRange(object):
         return self.has_now()
 
     def __str__(self):
-        return '\n\t%s\n\t%s' % (self._begin, self._end)
+        return u'\n\t%s\n\t%s' % (self._begin, self._end)
 
 
 class GMT(tzinfo):
@@ -664,6 +670,7 @@ class GMT(tzinfo):
         return timedelta(seconds=0)
 
 
+@six.python_2_unicode_compatible
 class Extensions(dict):
     """
     Represents x.509 (v3) custom extensions.
@@ -777,10 +784,11 @@ class Extensions(dict):
     def __str__(self):
         s = []
         for item in list(self.items()):
-            s.append('%s = "%s"' % item)
-        return '\n'.join(s)
+            s.append(u'%s = "%s"' % item)
+        return u'\n'.join(s)
 
 
+@six.python_2_unicode_compatible
 class OID(object):
     """
     The Object Identifier object.
@@ -795,7 +803,7 @@ class OID(object):
 
     @classmethod
     def join(cls, *oid):
-        return '.'.join(oid)
+        return u'.'.join(oid)
 
     @classmethod
     def split(cls, s):
@@ -940,11 +948,12 @@ class OID(object):
 
     def __str__(self):
         if not self._str:
-            self._str = '.'.join(self.part)
+            self._str = u'.'.join(self.part)
 
         return self._str
 
 
+@six.python_2_unicode_compatible
 class Order(object):
 
     @deprecated
@@ -1014,28 +1023,29 @@ class Order(object):
 
     def __str__(self):
         s = []
-        s.append('Order {')
-        s.append('\tName .............. = %s' % self.getName())
-        s.append('\tNumber ............ = %s' % self.getNumber())
-        s.append('\tSKU ............... = %s' % self.getSku())
-        s.append('\tSubscription ...... = %s' % self.getSubscription())
-        s.append('\tQuantity .......... = %s' % self.getQuantity())
-        s.append('\tStart (Ent) ....... = %s' % self.getStart())
-        s.append('\tEnd (Ent) ......... = %s' % self.getEnd())
-        s.append('\tVirt Limit ........ = %s' % self.getVirtLimit())
-        s.append('\tSocket Limit ...... = %s' % self.getSocketLimit())
-        s.append('\tContract .......... = %s' % self.getContract())
-        s.append('\tWarning Period .... = %s' % self.getWarningPeriod())
-        s.append('\tAccount Number .... = %s' % self.getAccountNumber())
-        s.append('\tProvides Management = %s' % self.getProvidesManagement())
-        s.append('\tSupport Level ..... = %s' % self.getSupportLevel())
-        s.append('\tSupport Type ...... = %s' % self.getSupportType())
-        s.append('\tStacking Id ....... = %s' % self.getStackingId())
-        s.append('\tVirt Only ......... = %s' % self.getVirtOnly())
-        s.append('}')
-        return '\n'.join(s)
+        s.append(u'Order {')
+        s.append(u'\tName .............. = %s' % self.getName())
+        s.append(u'\tNumber ............ = %s' % self.getNumber())
+        s.append(u'\tSKU ............... = %s' % self.getSku())
+        s.append(u'\tSubscription ...... = %s' % self.getSubscription())
+        s.append(u'\tQuantity .......... = %s' % self.getQuantity())
+        s.append(u'\tStart (Ent) ....... = %s' % self.getStart())
+        s.append(u'\tEnd (Ent) ......... = %s' % self.getEnd())
+        s.append(u'\tVirt Limit ........ = %s' % self.getVirtLimit())
+        s.append(u'\tSocket Limit ...... = %s' % self.getSocketLimit())
+        s.append(u'\tContract .......... = %s' % self.getContract())
+        s.append(u'\tWarning Period .... = %s' % self.getWarningPeriod())
+        s.append(u'\tAccount Number .... = %s' % self.getAccountNumber())
+        s.append(u'\tProvides Management = %s' % self.getProvidesManagement())
+        s.append(u'\tSupport Level ..... = %s' % self.getSupportLevel())
+        s.append(u'\tSupport Type ...... = %s' % self.getSupportType())
+        s.append(u'\tStacking Id ....... = %s' % self.getStackingId())
+        s.append(u'\tVirt Only ......... = %s' % self.getVirtOnly())
+        s.append(u'}')
+        return u'\n'.join(s)
 
 
+@six.python_2_unicode_compatible
 class Product(object):
 
     @deprecated
@@ -1075,16 +1085,16 @@ class Product(object):
 
     def __str__(self):
         s = []
-        s.append('Product {')
-        s.append('\tHash ......... = %s' % self.getHash())
-        s.append('\tName ......... = %s' % self.getName())
-        s.append('\tVersion ...... = %s' % self.getVersion())
-        s.append('\tArchitecture . = %s' % self.getArch())
-        s.append('\tProvided Tags  = %s' % self.getProvidedTags())
-        s.append('\tBrand Type     = %s' % self.getBrandType())
-        s.append('\tBrand Name     = %s' % self.getBrandName())
-        s.append('}')
-        return '\n'.join(s)
+        s.append(u'Product {')
+        s.append(u'\tHash ......... = %s' % self.getHash())
+        s.append(u'\tName ......... = %s' % self.getName())
+        s.append(u'\tVersion ...... = %s' % self.getVersion())
+        s.append(u'\tArchitecture . = %s' % self.getArch())
+        s.append(u'\tProvided Tags  = %s' % self.getProvidedTags())
+        s.append(u'\tBrand Type     = %s' % self.getBrandType())
+        s.append(u'\tBrand Name     = %s' % self.getBrandName())
+        s.append(u'}')
+        return u'\n'.join(s)
 
     def __repr__(self):
         return str(self)
@@ -1096,6 +1106,7 @@ class Entitlement(object):
         self.ext = ext
 
 
+@six.python_2_unicode_compatible
 class Content(Entitlement):
 
     def __init__(self, ext):
@@ -1146,19 +1157,19 @@ class Content(Entitlement):
 
     def __str__(self):
         s = []
-        s.append('Entitlement (content) {')
-        s.append('\tName .......... = %s' % self.getName())
-        s.append('\tLabel ......... = %s' % self.getLabel())
-        s.append('\tQuantity ...... = %s' % self.getQuantity())
-        s.append('\tFlex Quantity . = %s' % self.getFlexQuantity())
-        s.append('\tVendor ........ = %s' % self.getVendor())
-        s.append('\tURL ........... = %s' % self.getUrl())
-        s.append('\tGPG Key ....... = %s' % self.getGpg())
-        s.append('\tEnabled ....... = %s' % self.getEnabled())
-        s.append('\tMetadata Expire = %s' % self.getMetadataExpire())
-        s.append('\tRequired Tags . = %s' % self.getRequiredTags())
-        s.append('}')
-        return '\n'.join(s)
+        s.append(u'Entitlement (content) {')
+        s.append(u'\tName .......... = %s' % self.getName())
+        s.append(u'\tLabel ......... = %s' % self.getLabel())
+        s.append(u'\tQuantity ...... = %s' % self.getQuantity())
+        s.append(u'\tFlex Quantity . = %s' % self.getFlexQuantity())
+        s.append(u'\tVendor ........ = %s' % self.getVendor())
+        s.append(u'\tURL ........... = %s' % self.getUrl())
+        s.append(u'\tGPG Key ....... = %s' % self.getGpg())
+        s.append(u'\tEnabled ....... = %s' % self.getEnabled())
+        s.append(u'\tMetadata Expire = %s' % self.getMetadataExpire())
+        s.append(u'\tRequired Tags . = %s' % self.getRequiredTags())
+        s.append(u'}')
+        return u'\n'.join(s)
 
     def __repr__(self):
         return str(self)
@@ -1167,6 +1178,7 @@ class Content(Entitlement):
         return hash(self.label)
 
 
+@six.python_2_unicode_compatible
 class Role(Entitlement):
 
     def getName(self):
@@ -1180,11 +1192,11 @@ class Role(Entitlement):
 
     def __str__(self):
         s = []
-        s.append('Entitlement (role) {')
-        s.append('\tName ......... = %s' % self.getName())
-        s.append('\tDescription .. = %s' % self.getDescription())
-        s.append('}')
-        return '\n'.join(s)
+        s.append(u'Entitlement (role) {')
+        s.append(u'\tName ......... = %s' % self.getName())
+        s.append(u'\tDescription .. = %s' % self.getDescription())
+        s.append(u'}')
+        return u'\n'.join(s)
 
     def __repr__(self):
         return str(self)

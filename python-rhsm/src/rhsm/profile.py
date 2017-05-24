@@ -15,6 +15,7 @@ from __future__ import print_function, division, absolute_import
 import logging
 
 import rpm
+import six
 
 from rhsm import ourjson as json
 
@@ -28,6 +29,7 @@ class InvalidProfileType(Exception):
     pass
 
 
+@six.python_2_unicode_compatible
 class Package(object):
     """
     Represents a package installed on the system.
@@ -70,7 +72,7 @@ class Package(object):
         return False
 
     def __str__(self):
-        return "<Package: %s %s %s>" % (self.name, self.version, self.release)
+        return u"<Package: %s %s %s>" % (self.name, self.version, self.release)
 
 
 class RPMProfile(object):

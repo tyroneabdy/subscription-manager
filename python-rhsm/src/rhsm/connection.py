@@ -37,6 +37,7 @@ from six.moves.urllib.parse import urlencode, quote, quote_plus
 from rhsm.config import initConfig
 
 from rhsm import version
+
 python_rhsm_version = version.rpm_version
 
 try:
@@ -101,6 +102,7 @@ class ConnectionSetupException(ConnectionException):
     pass
 
 
+@six.python_2_unicode_compatible
 class BadCertificateException(ConnectionException):
     """ Thrown when an error parsing a certificate is encountered. """
 
@@ -109,7 +111,7 @@ class BadCertificateException(ConnectionException):
         self.cert_path = cert_path
 
     def __str__(self):
-        return "Bad certificate at %s" % self.cert_path
+        return u"Bad certificate at %s" % self.cert_path
 
 
 class RestlibException(ConnectionException):
@@ -121,7 +123,7 @@ class RestlibException(ConnectionException):
 
     def __init__(self, code, msg=None, headers=None):
         self.code = code
-        self.msg = msg or ""
+        self.msg = msg or u""
         self.headers = headers or {}
 
     def __str__(self):
@@ -146,6 +148,7 @@ class GoneException(RestlibException):
         self.deleted_id = deleted_id
 
 
+@six.python_2_unicode_compatible
 class NetworkException(ConnectionException):
     """
     Thrown when the response of a request has no valid json content
@@ -157,9 +160,10 @@ class NetworkException(ConnectionException):
         self.code = code
 
     def __str__(self):
-        return "Network error code: %s" % self.code
+        return u"Network error code: %s" % self.code
 
 
+@six.python_2_unicode_compatible
 class RemoteServerException(ConnectionException):
     """
     Thrown when the response to a request has no valid json content and
@@ -174,19 +178,22 @@ class RemoteServerException(ConnectionException):
 
     def __str__(self):
         if self.request_type and self.handler:
-            return "Server error attempting a %s to %s returned status %s" % (self.request_type,
-                                                                              self.handler,
-                                                                              self.code)
-        return "Server returned %s" % self.code
+            return u"Server error attempting a %s to %s returned status %s" % \
+                   (self.request_type, self.handler, self.code)
+        return u"Server returned %s" % self.code
 
 
+@six.python_2_unicode_compatible
 class AuthenticationException(RemoteServerException):
-    prefix = "Authentication error"
+    prefix = u"Authentication error"
 
     def __str__(self):
-        buf = super(AuthenticationException, self).__str__()
-        buf += "\n"
-        buf += "%s: Invalid credentials for request." % self.prefix
+        buf = u"Server returned %s" % self.code
+        if self.request_type and self.handler:
+            buf = u"Server error attempting a %s to %s returned status %s" % \
+                  (self.request_type, self.handler, self.code)
+        buf += u"\n"
+        buf += u"%s: Invalid credentials for request." % self.prefix
         return buf
 
 
@@ -200,10 +207,9 @@ class RateLimitExceededException(RestlibException):
     def __init__(self, code,
                  msg=None,
                  headers=None):
-        super(RateLimitExceededException, self).__init__(code,
-                                                         msg)
+        super(RateLimitExceededException, self).__init__(code, msg)
         self.headers = headers or {}
-        self.msg = msg or ""
+        self.msg = msg or u""
         self.retry_after = safe_int(self.headers.get('retry-after'))
 
 
@@ -211,14 +217,14 @@ class UnauthorizedException(AuthenticationException):
     """
     Thrown in response to http status code 401 with no valid json content
     """
-    prefix = "Unauthorized"
+    prefix = u"Unauthorized"
 
 
 class ForbiddenException(AuthenticationException):
     """
     Thrown in response to http status code 403 with no valid json content
     """
-    prefix = "Forbidden"
+    prefix = u"Forbidden"
 
 
 class ExpiredIdentityCertException(ConnectionException):
@@ -1212,7 +1218,7 @@ class UEPConnection(object):
             method = "/pools?consumer=%s" % consumer
 
         else:
-            raise Exception("Must specify an owner or a consumer to list pools.")
+            raise Exception(u"Must specify an owner or a consumer to list pools.")
 
         if listAll:
             method = "%s&listall=true" % method
@@ -1293,8 +1299,7 @@ class UEPConnection(object):
         different URL.
         """
         if name and not owner_key:
-            raise Exception("Must specify owner key to query environment "
-                    "by name")
+            raise Exception(u"Must specify owner key to query environment by name")
 
         query_param = urlencode({"name": name})
         url = "/owners/%s/environments?%s" % (self.sanitize(owner_key), query_param)
