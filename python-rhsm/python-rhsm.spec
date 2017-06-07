@@ -1,14 +1,4 @@
-# If on Fedora 12 or RHEL 5 or earlier, we need to define these:
-%if ! (0%{?fedora} > 12 || 0%{?rhel} > 5)
-%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print(get_python_lib(1))")}
-%endif
-
-# Use python-simplejson on RHEL 5 as there is no json module in Python 2.4.
-# On RHEL 6, we'll use it if it's installed (see ourjson.py).
-# simplejson is not available in RHEL 7 at all.
-%global use_simplejson (0%{?rhel} && 0%{?rhel} == 5)
-
-# on non-EOL Fedora and RHEL 7, let's not use m2crypto
+# on recent Fedora and RHEL 7, let's not use m2crypto
 %global use_m2crypto (0%{?fedora} < 23 && 0%{?rhel} < 7)
 
 %global _hardened_build 1
@@ -30,6 +20,15 @@ Source0: %{name}-%{version}.tar.gz
 URL: http://www.candlepinproject.org
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 
+%if 0%{?suse_version}
+BuildRequires: python-devel >= 2.6
+%else
+BuildRequires: python2-devel
+%endif
+BuildRequires: python-setuptools
+BuildRequires: python-six
+BuildRequires: openssl-devel
+
 %if %use_m2crypto
 %if 0%{?suse_version}
 Requires: python-m2crypto
@@ -37,29 +36,36 @@ Requires: python-m2crypto
 Requires: m2crypto
 %endif
 %endif
-Requires: python-iniparse
-Requires: rpm-python
 Requires: python-dateutil
-%if %use_simplejson
-Requires: python-simplejson
-%endif
-Requires: python-rhsm-certificates = %{version}-%{release}
+Requires: python-iniparse
+# rpm-python is an old name for python2-rpm but RHEL6 uses the old name
+Requires: rpm-python
 Requires: python-six
+Requires: python-rhsm-certificates = %{version}-%{release}
 
-%if 0%{?suse_version}
-BuildRequires: python-devel >= 2.6
-%else
-BuildRequires: python2-devel
-%endif
-BuildRequires: python-setuptools
-BuildRequires: openssl-devel
-BuildRequires: python-six
-
-
-%description
-A small library for communicating with the REST interface of a Red Hat Unified
-Entitlement Platform. This interface is used for the management of system
+%global _description \
+A small library for communicating with the REST interface of a Red Hat Unified\
+Entitlement Platform. This interface is used for the management of system\
 entitlements, certificates, and access to content.
+
+%description %{_description}
+
+
+%package -n python3-%{name}
+Summary: A Python library to communicate with a Red Hat Unified Entitlement Platform
+BuildRequires: python3-devel
+BuildRequires: python3-setuptools
+BuildRequires: python3-six
+BuildRequires: openssl-devel
+
+Requires: python3-dateutil
+Requires: python3-iniparse
+Requires: python3-rpm
+Requires: python3-six
+# M2Crypto isn't even used in new Fedoras and RHEL 8
+Requires: python-rhsm-certificates = %{version}-%{release}
+
+%description -n python3-%{name} %{_description}
 
 
 %package certificates
@@ -77,25 +83,32 @@ Python. The name instead reflects its relationship to python-rhsm.
 
 %build
 # create a version.py with the rpm version info
-PYTHON_RHSM_VERSION=%{version} PYTHON_RHSM_RELEASE=%{release} CFLAGS="%{optflags}" LDFLAGS="%{__global_ldflags}" %{__python} setup.py build
+PYTHON_RHSM_VERSION=%{version} PYTHON_RHSM_RELEASE=%{release} LDFLAGS="%{__global_ldflags}" %{py2_build}
+PYTHON_RHSM_VERSION=%{version} PYTHON_RHSM_RELEASE=%{release} LDFLAGS="%{__global_ldflags}" %{py3_build}
 
 %install
 rm -rf %{buildroot}
-%{__python} setup.py install -O1 --skip-build --root %{buildroot} --prefix=%{_prefix}
+%{py2_install}
+%{py3_install}
 mkdir -p %{buildroot}%{_sysconfdir}/rhsm/ca
 install etc-conf/ca/*.pem %{buildroot}%{_sysconfdir}/rhsm/ca
 
 %clean
 rm -rf %{buildroot}
 
-%files
+%files -n %{name}
 %defattr(-,root,root,-)
 %doc README
+%dir %{python2_sitearch}/rhsm
+%{python2_sitearch}/rhsm/*
+%{python2_sitearch}/rhsm-*.egg-info
 
-%dir %{python_sitearch}/rhsm
-
-%{python_sitearch}/rhsm/*
-%{python_sitearch}/rhsm-*.egg-info
+%files -n python3-%{name}
+%defattr(-,root,root,-)
+%doc README
+%dir %{python3_sitearch}/rhsm
+%{python3_sitearch}/rhsm/*
+%{python3_sitearch}/rhsm-*.egg-info
 
 %files certificates
 %attr(755,root,root) %dir %{_sysconfdir}/rhsm
