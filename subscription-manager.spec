@@ -3,26 +3,16 @@
 # For optional building of ostree-plugin sub package. Unrelated to systemd
 # but the same versions apply at the moment.
 %global has_ostree %use_systemd && 0%{?suse_version} == 0
-%global use_firstboot 0
 %global use_initial_setup 1
+%global use_firstboot 0
+%global use_kitchen 1
 %global rhsm_plugins_dir  /usr/share/rhsm-plugins
 %global use_gtk3 %use_systemd
 
-%if 0%{?rhel} == 7
-%global use_initial_setup 1
-%global use_firstboot 0
-%endif
-
-# 6 < rhel < 7
-%if 0%{?rhel} == 6
+%if 0%{?rhel} == 6 || 0%{?suse_version}
 %global use_initial_setup 0
 %global use_firstboot 1
-%endif
-
-# SLES
-%if 0%{?suse_version}
-%global use_initial_setup 0
-%global use_firstboot 1
+%global use_kitchen 0
 %endif
 
 %global use_dnf (0%{?fedora} && 0%{?fedora} >= 22)
@@ -88,7 +78,17 @@ Source0: %{name}-%{version}.tar.gz
 %if 0%{?suse_version}
 Source1: subscription-manager-rpmlintrc
 %endif
+
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
+
+# A note about the %{?foo:bar} %{!?foo:quux} convention.  The %{?foo:bar}
+# syntax evaluates foo and if it is true, it expands to "bar" otherwise it
+# expands to nothing.  The %{!?foo:quux} syntax similarily only the expansion
+# occurs when foo is false.  Since one and only one of the expressions will
+# expand we can more concisely handle when a dependency has different names in
+# SUSE versus RHEL.  The traditional if syntax gets extremely confusing when
+# nesting is required since RPM requires the various preamble directives to be
+# at the start of a line making meaningful indentation impossible.
 
 Requires:  python-ethtool
 Requires:  python-iniparse
@@ -97,43 +97,22 @@ Requires:  virt-what
 Requires:  python-rhsm >= 1.20.0
 Requires:  python-decorator
 Requires:  python-six
-
-%if 0%{?suse_version}
-Requires:  dbus-1-python
-%else
-Requires:  dbus-python
-%endif
-%if 0%{?suse_version} && 0%{?suse_version} < 1315
-Requires:  yum
-%else
-Requires:  yum >= 3.2.29-73
-%endif
-%if !0%{?suse_version}
-Requires:  usermode
-%endif
 Requires:  python-dateutil
-%if %use_gtk3
+
+Requires: %{?suse_version:dbus-1-python} %{!?suse_version:dbus-python}
+Requires: %{?suse_version:aaa_base} %{!?suse_version:chkconfig}
+Requires: %{?suse_version:yum} %{!?suse_version:yum >= 3.2.29-73}
+
+# Support GTK2 and GTK3 on both SUSE and RHEL...
 %if 0%{?suse_version}
-Requires: python-gobject
+Requires: %{?use_gtk3:python-gobject} %{!?use_gtk3:python-gobject2, libzypp, zypp-plugin-python, python-zypp}
 %else
-Requires: gobject-introspection
-Requires: pygobject3-base
-%endif
-%else
-%if 0%{?suse_version}
-Requires:  python-gobject2
-Requires:  libzypp
-Requires:  zypp-plugin-python
-Requires:  python-zypp
-%else
-Requires:  pygobject2
-%endif
-%endif
+Requires:  usermode
+Requires:  %{?use_gtk3:gobject-introspection, pygobject3-base} %{!?use_gtk3:pygobject2}
 
 # There's no dmi to read on these arches, so don't pull in this dep.
+# Additionally, dmidecode isn't packaged at all on SUSE
 %ifnarch ppc ppc64 s390 s390x
-# Do not pull in for suse machines - not packaged for suse
-%if 0%{?suse_version} == 0
 Requires:  python-dmidecode
 %endif
 %endif
@@ -143,14 +122,8 @@ Requires(post): systemd
 Requires(preun): systemd
 Requires(postun): systemd
 %else
-%if 0%{?suse_version}
-Requires(post): aaa_base
-Requires(preun): aaa_base
-%else
-Requires(post): chkconfig
-Requires(preun): chkconfig
-Requires(preun): initscripts
-%endif
+Requires(post): %{?suse_version:aaa_base} %{!?suse_version:chkconfig}
+Requires(preun): %{?suse_version:aaa_base} %{!?suse_version:chkconfig, initscripts}
 %endif
 
 BuildRequires: python-devel
@@ -160,35 +133,25 @@ BuildRequires: intltool
 BuildRequires: libnotify-devel
 BuildRequires: desktop-file-utils
 BuildRequires: python-six
-%if 0%{?fedora} || 0%{?rhel}
-BuildRequires: redhat-lsb
-%else
-BuildRequires: lsb-release
-BuildRequires: distribution-release
-%endif
-%if 0%{?suse_version} == 0
-BuildRequires: scrollkeeper
-%endif
+
+BuildRequires: %{?suse_version:dbus-1-glib-devel} %{!?suse_version:dbus-glib-devel}
+BuildRequires: %{?suse_version:lsb-release, distribution-release} %{!?suse_version:redhat-lsb}
+BuildRequires: %{?suse_version:gconf2-devel} %{!?suse_version:GConf2-devel}
+BuildRequires: %{?suse_version:update-desktop-files} %{!?suse_version:scrollkeeper}
+
+BuildRequires: %{?use_gtk3:gtk3-devel} %{!?use_gtk3:gtk2-devel}
+
 %if 0%{?suse_version}
-BuildRequires: gconf2-devel
-BuildRequires: dbus-1-glib-devel
-BuildRequires: update-desktop-files
 BuildRequires: libzypp
-%else
-BuildRequires: GConf2-devel
-BuildRequires: dbus-glib-devel
 %endif
-%if %use_gtk3
-BuildRequires: gtk3-devel
-%else
-BuildRequires: gtk2-devel
+
+%if 0%{?suse_version} >= 1210
+BuildRequires: systemd-rpm-macros
 %endif
+
 %if %use_systemd
 # We need the systemd RPM macros
 BuildRequires: systemd
-%endif
-%if 0%{?suse_version} >= 1210
-BuildRequires: systemd-rpm-macros
 %endif
 
 %description
@@ -213,20 +176,16 @@ Group: System Environment/Base
 Requires: %{name} = %{version}-%{release}
 
 # We need pygtk3 and gtk2 until rhsm-icon is ported to gtk3
-%if %use_gtk3
-Requires: pygobject3
-Requires: gtk3
-Requires: font(cantarell)
-%else
-Requires: pygtk2 pygtk2-libglade
-%if 0%{?suse_version}
-Requires: dejavu
-%else
-Requires: dejavu-sans-fonts
-%endif
-%endif
+Requires: %{?use_gtk3:pygobject3, gtk3} %{!?use_gtk3:pygtk2, pygtk2-libglade}
 Requires: usermode-gtk
 Requires: gnome-icon-theme
+
+%if %use_gtk3
+Requires: font(cantarell)
+%else
+Requires: %{?suse_version:dejavu} %{!?suse_version:dejavu-sans-fonts}
+%endif
+
 %if 0%{?suse_version} == 0
 Requires(post): scrollkeeper
 Requires(postun): scrollkeeper
