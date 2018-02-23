@@ -1,0 +1,143 @@
+---
+- name: install required RPMs
+  package:
+    name: "{{item}}"
+    state: present
+  become: yes
+  with_items: "{{required_rpms}}"
+
+- name: create configuration file for eth1
+  template:
+    src: ifcfg-eth1.j2
+    dest: /etc/sysconfig/network-scripts/ifcfg-eth1
+  become: yes
+
+- name: restart network
+  service:
+    name: network
+    state: restarted
+  become: true
+
+- name: modify configuration file of dhcp server
+  template:
+    src: dhcpd.conf.j2
+    dest: /etc/dhcp/dhcpd.conf
+  become: yes
+
+- name: enable dhcpd service
+  service:
+    name: dhcpd
+    enabled: yes
+  become: true
+
+- name: start dhcpd service
+  service:
+    name: dhcpd
+    state: started
+  become: true
+
+- name: enable tftp.socket
+  service:
+    name: tftp.socket
+    enabled: yes
+  become: true
+
+- name: start tftp.socket
+  service:
+    name: tftp.socket
+    state: started
+  become: true
+
+- name: enable vsftpd service
+  service:
+    name: vsftpd
+    enabled: yes
+  become: true
+
+- name: start vsftpd service
+  service:
+    name: vsftpd
+    state: started
+  become: true
+
+- name: create directory /vagrant_data
+  file:
+    path: /vagrant_data
+    state: directory
+    owner: vagrant
+    group: vagrant
+    mode: 0755
+  become: true
+
+- name: check if installation iso image is already downloaded
+  stat:
+    path: "/vagrant_data/{{iso_img_file}}"
+  register: iso_img_stat_result
+
+- name: download minimal installation iso image
+  get_url:
+    url: "{{iso_img_url}}"
+    dest: /vagrant_data
+    checksum: "{{iso_img_checksum}}"
+  when: iso_img_stat_result.stat.exists == False
+
+- name: mount iso image
+  mount:
+    src: "/vagrant_data/{{iso_img_file}}"
+    path: "{{iso_img_mount_path}}"
+    fstype: "iso9660"
+    opts: ro
+    state: mounted
+  become: true
+
+- name: rsync content of iso image with /var/ftp/pub
+  shell: "rsync -a {{iso_img_mount_path}}/ /var/ftp/pub"
+  become: true
+
+- name: unmount iso image
+  mount:
+    path: "{{iso_img_mount_path}}"
+    state: unmounted
+  become: true
+
+- name: create directory /var/lib/tftpboot/pxelinux.cfg
+  file:
+    path: /var/lib/tftpboot/pxelinux.cfg
+    state: directory
+    mode: 0755
+  become: true
+
+- name: create directory /var/lib/tftpboot/netboot
+  file:
+    path: /var/lib/tftpboot/netboot
+    state: directory
+    mode: 0755
+  become: true
+
+- name: copy syslinux files to /var/lib/tftpboot
+  copy:
+    src: "/usr/share/syslinux/{{item}}"
+    remote_src: yes
+    dest: /var/lib/tftpboot
+  with_items: "{{syslinux_files}}"
+  become: true
+
+- name: copy pxeboot kernel files to /var/lib/tftpboot/netboot
+  copy:
+    src: "/var/ftp/pub/images/pxeboot/{{item}}"
+    remote_src: yes
+    dest: /var/lib/tftpboot/netboot
+  with_items: "{{kernel_files}}"
+  become: true
+
+- name: create default file containing boot menu
+  template:
+    src: default.j2
+    dest: /var/lib/tftpboot/pxelinux.cfg/default
+  become: true
+
+- name: create kickstart file for centos 7
+  template:
+    src: ks.cfg.j2
+    dest: /var/ftp/pub/ks.cfg
+  become: true
