@@ -18,7 +18,7 @@ network  --bootproto=dhcp --device=eth0 --ipv6=auto --activate
 network  --hostname=localhost.localdomain
 
 # Root password
-rootpw --iscrypted $6$o4Mdm6jwuqvl3hlU$hVP1.ZtSW83rnYUHmc5iN2mSmftEFQfelrHmHQkfpPc8n99YlWltqmr3.eFozWxk/oUo5.iDAgUsg3Y1EG1ap.
+rootpw --plaintext redhat
 # System services
 services --disabled="chronyd"
 # System timezone

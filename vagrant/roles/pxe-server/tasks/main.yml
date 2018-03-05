@@ -60,6 +60,13 @@
     state: started
   become: true
 
+- name: download minimal installation iso image to localhost
+  get_url:
+    url: "{{iso_img_url}}"
+    dest: vagrant_data
+    checksum: "{{iso_img_checksum}}"
+  delegate_to: localhost
+
 - name: create directory /vagrant_data
   file:
     path: /vagrant_data
@@ -69,17 +76,11 @@
     mode: 0755
   become: true
 
-- name: check if installation iso image is already downloaded
-  stat:
-    path: "/vagrant_data/{{iso_img_file}}"
-  register: iso_img_stat_result
-
-- name: download minimal installation iso image
-  get_url:
-    url: "{{iso_img_url}}"
+- name: copy iso image to pxe server
+  copy:
+    src: vagrant_data
     dest: /vagrant_data
-    checksum: "{{iso_img_checksum}}"
-  when: iso_img_stat_result.stat.exists == False
+  become: true
 
 - name: mount iso image
   mount:
