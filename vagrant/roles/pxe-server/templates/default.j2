@@ -3,7 +3,7 @@ prompt 0
 timeout 30
 MENU TITLE *** PXE Menu ***
 
-LABEL centos7_x64
-MENU LABEL CentOS 7 X64
+LABEL {{distro_name}}{{distro_version}}_x64
+MENU LABEL {{distro_name}} {{distro_version}} x86_64
 KERNEL /netboot/vmlinuz
 APPEND initrd=/netboot/initrd.img inst.repo=ftp://{{pxe_server_ip_addr | ipaddr('address')}}/pub ks=ftp://{{pxe_server_ip_addr | ipaddr('address')}}/pub/ks.cfg

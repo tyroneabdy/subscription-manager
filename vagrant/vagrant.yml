@@ -1,5 +1,5 @@
 ---
-- hosts: "*fedora*, subman-devel"
+- hosts: "*fedora*"
   gather_facts: no
   tasks:
     - name: install libs so we can use ansible (fedora only)

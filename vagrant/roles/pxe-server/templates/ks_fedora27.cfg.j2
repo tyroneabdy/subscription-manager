@@ -14,36 +14,36 @@ keyboard --vckeymap=us --xlayouts='us'
 lang en_US.UTF-8
 
 # Network information
-network  --bootproto=dhcp --device=eth0 --ipv6=auto --activate
-network  --hostname=localhost.localdomain
+network  --bootproto=dhcp --device=ens3 --ipv6=auto --activate
+network  --hostname=pxe-client.localdomain
 
 # Root password
 rootpw --plaintext redhat
 # System services
-services --disabled="chronyd"
+services --enabled="chronyd"
 # System timezone
-timezone Europe/Prague --isUtc --nontp
+timezone Europe/Prague --isUtc
 # System bootloader configuration
 bootloader --location=mbr --boot-drive=vda
-autopart --type=lvm
 # Partition clearing information
 clearpart --all --initlabel --drives=vda
+# Disk partitioning information
+autopart --type=lvm
 
 # Shut down and power off the system after the installation has successfully completed
 poweroff
 
 %packages
-@^minimal
-@core
+@^server-product-environment
 
 %end
 
-%addon com_redhat_kdump --disable --reserve-mb='auto'
+%addon com_redhat_kdump --disable --reserve-mb='128'
 
 %end
 
 %anaconda
-pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy root --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
 pwpolicy user --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
-pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --notempty
+pwpolicy luks --minlen=6 --minquality=1 --notstrict --nochanges --emptyok
 %end

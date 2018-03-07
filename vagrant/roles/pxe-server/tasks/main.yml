@@ -24,46 +24,31 @@
     dest: /etc/dhcp/dhcpd.conf
   become: yes
 
-- name: enable dhcpd service
+- name: start and enable dhcpd service
   service:
     name: dhcpd
     enabled: yes
-  become: true
-
-- name: start dhcpd service
-  service:
-    name: dhcpd
     state: started
   become: true
 
-- name: enable tftp.socket
+- name: start and enable tftp socket
   service:
     name: tftp.socket
     enabled: yes
-  become: true
-
-- name: start tftp.socket
-  service:
-    name: tftp.socket
     state: started
   become: true
 
-- name: enable vsftpd service
+- name: start and enable vsftpd service
   service:
     name: vsftpd
     enabled: yes
-  become: true
-
-- name: start vsftpd service
-  service:
-    name: vsftpd
     state: started
   become: true
 
 - name: download minimal installation iso image to localhost
   get_url:
     url: "{{iso_img_url}}"
-    dest: vagrant_data
+    dest: "vagrant_data/{{iso_img_file}}"
     checksum: "{{iso_img_checksum}}"
   delegate_to: localhost
 
@@ -78,8 +63,8 @@
 
 - name: copy iso image to pxe server
   copy:
-    src: vagrant_data
-    dest: /vagrant_data
+    src: "vagrant_data/{{iso_img_file}}"
+    dest: "/vagrant_data/{{iso_img_file}}"
   become: true
 
 - name: mount iso image
@@ -137,8 +122,8 @@
     dest: /var/lib/tftpboot/pxelinux.cfg/default
   become: true
 
-- name: create kickstart file for centos 7
+- name: create kickstart file
   template:
-    src: ks.cfg.j2
+    src: "ks_{{distro_name}}{{distro_version}}.cfg.j2"
     dest: /var/ftp/pub/ks.cfg
   become: true

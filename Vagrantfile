@@ -5,6 +5,8 @@ require 'yaml'
 
 VAGRANTFILE_DIR = File.dirname(__FILE__)
 
+Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+
 Vagrant.configure("2") do |config|
   vm_boxes = {
     "centos7" => "centos/7",
@@ -41,6 +43,7 @@ Vagrant.configure("2") do |config|
     "src/rhsm/_certificate.so",
     "subscription-manager.egg-info",
     "cockpit/node_modules",
+    "vagrant/vagrant_data",
   ]
 
   # Set up the hostmanager plugin to automatically configure host & guest hostnames
@@ -106,7 +109,7 @@ ip_prefix = '24'
 Vagrant.configure("2") do |config|
   config.vm.hostname = 'pxe-server'
   config.vm.box = 'centos/7'
-  config.vm.define 'pxe-server'
+  config.vm.define 'pxe-server', autostart: false
 
   config.ssh.forward_x11 = true
 
