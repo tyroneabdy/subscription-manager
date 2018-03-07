@@ -134,6 +134,7 @@ Vagrant.configure("2") do |config|
   config.vm.hostname = 'pxe-client'
   config.vm.box = 'centos/7'
   config.vm.define 'pxe-client'
+  config.ssh.username = 'root'
 
   config.vm.network "private_network",
     auto_config: true,
